@@ -1,0 +1,40 @@
+name = "miaoyou-copy"
+main = "worker/src/index.ts"
+
+# 打包配置
+minify = true
+compatibility_flags = [ "nodejs_compat" ]
+compatibility_date = "2025-03-01"
+keep_vars = true
+
+# 启用 D1 数据库
+[[d1_databases]]
+binding = "DB"
+database_name = "${D1_DATABASE_NAME}"
+database_id = "${D1_DATABASE_ID}"
+
+# 设置域名
+[vars]
+VITE_EMAIL_DOMAIN = "${VITE_EMAIL_DOMAIN}"
+VITE_EXTERNAL_LINKS = "临时Gmail邮箱|https://smailpro.com/temporary-email,真实地址生成器|https://ip.alice7.eu.org/"
+# VITE_EXTERNAL_LINKS 也可以在 Cloudflare Dashboard → Workers → 环境变量中覆盖
+# 格式：标签|URL,标签|URL（最多5个）
+
+# 配置邮件处理
+[triggers]
+crons = ["0 * * * *"]
+
+[build]
+command = "pnpm run build"
+
+[assets]
+binding = "ASSETS"
+directory = "frontend/dist"
+not_found_handling = "single-page-application"
+
+[ai]
+binding = "AI"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
