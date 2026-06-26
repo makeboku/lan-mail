@@ -1,4 +1,4 @@
-name = "miaoyou-copy"
+name = "lan-mail"
 main = "worker/src/index.ts"
 
 # 打包配置
