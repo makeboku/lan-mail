@@ -13,7 +13,8 @@ keep_vars = true
 # - 命令行部署：先执行 `wrangler d1 create 你的库名`，再把返回的 database_name / database_id 填到这里。
 [[d1_databases]]
 binding = "DB"
-database_name = "myou-mail"
+database_name = "miaoyou"
+database_id = "e77efb4a-e91d-4b6a-9535-52837bf07d43"
 
 # 设置域名
 [vars]
