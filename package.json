@@ -3,31 +3,6 @@
   "version": "1.0.0",
   "description": "秒邮（miaoyou）D1 加密版：Cloudflare Worker + D1 + Email Routing",
   "private": true,
-  "cloudflare": {
-    "label": "秒邮（D1 加密版）",
-    "products": [
-      "Workers",
-      "D1",
-      "Workers AI"
-    ],
-    "categories": [
-      "email"
-    ],
-    "bindings": {
-      "MAIL_ENCRYPTION_KEY": {
-        "description": "D1 敏感字段加密主密钥，至少 16 字符。生成：`openssl rand -base64 32`。留空则敏感字段以明文存储；丢失后已加密数据无法恢复。"
-      },
-      "MIGRATION_SECRET": {
-        "description": "历史数据加密迁移接口密钥，至少 16 字符。生成：`openssl rand -base64 32`。留空则 `/api/admin/encryption/*` 接口禁用。"
-      },
-      "VITE_EMAIL_DOMAIN": {
-        "description": "你的邮箱域名列表，逗号分隔，例如 `mail.example.com,example.org`。"
-      },
-      "VITE_EXTERNAL_LINKS": {
-        "description": "顶部工具链接，格式 `标签|URL`，多个用逗号分隔；不需要可留空。"
-      }
-    }
-  },
   "scripts": {
     "dev:frontend": "pnpm --filter frontend run dev",
     "dev:backend": "wrangler dev",
