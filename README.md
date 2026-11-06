@@ -1,5 +1,6 @@
 # <div align="center">🚀 秒邮 - 永久匿名邮箱服务</div>
 
+<div
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Built with Cloudflare Workers](https://img.shields.io/badge/Built%20with-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/workers/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
