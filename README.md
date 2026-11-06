@@ -28,6 +28,7 @@
   </p>
 
 </div>
+
 ---
 
 ## 🚀 核心特性
@@ -65,7 +66,7 @@ Myou-mail 现在采用全新的一体化部署方式，前端和后端整合为�
 #### 方式一：一键部署（推荐新手）
 
 <div align="center">
-  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/makeboku/myou" target="_blank">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/makeboku/lan-mail" target="_blank">
     <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare" />
   </a>
 </div>
@@ -83,6 +84,8 @@ Myou-mail 现在采用全新的一体化部署方式，前端和后端整合为�
     <li>按照页面提示连接您的 GitHub 账户</li>
     <li>填写应用名称和数据库名称</li>
     <li>在高级设置 -> 环境变量中设置：
+  </ol>
+</div>
 
 ## 🔧 环境变量
 
@@ -93,6 +96,8 @@ Myou-mail 现在采用全新的一体化部署方式，前端和后端整合为�
 | `MIGRATION_SECRET` | 历史数据加密迁移接口密钥，至少 16 字符。留空则 `/api/admin/encryption/*` 接口禁用 | 同上 |
 | `VITE_EXTERNAL_LINKS` | 顶部「工具」外链，格式 `标签|URL`，多个用逗号分隔；不需要可留空 | `临时Gmail邮箱1|https://smailpro.com/temporary-email,临时Gmail邮箱2|https://temp.tf` |
 
+<div 
+  <ol>
     <li>点击"创建和部署"</li>
     <li>部署完成后，在 Cloudflare Workers 控制面板中绑定自定义域名</li>
     <li>配置 Cloudflare Email 路由，将邮件转发到您的 Worker</li>
@@ -121,7 +126,6 @@ Myou-mail 现在采用全新的一体化部署方式，前端和后端整合为�
 </div>
 
 
----
 ## 🔧 技术栈
 
 ### 🎨 前端
