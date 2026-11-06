@@ -1,0 +1,17 @@
+# 本地开发 / 网页一键部署密钥示例
+#
+# 本地开发：复制为 .dev.vars 并填入真实值（.dev.vars 已被 .gitignore 忽略）。
+# 网页一键部署：Cloudflare 会读取本文件中的变量名，在部署页面提示你填写。
+#
+# 生成高强度密钥：openssl rand -base64 32
+#
+# 注意：
+# - MAIL_ENCRYPTION_KEY 至少 16 字符（建议 32 字符以上）；留空则不启用 D1 加密（敏感字段明文存储）。
+#   密钥会用 PBKDF2-SHA256 派生 v2 加密密钥；历史 v1 密文仍可读取，并可通过迁移接口升级。
+# - MIGRATION_SECRET 留空则 /api/admin/encryption/* 管理接口禁用（返回 401）。
+# - 不要把真实密钥提交到 Git 仓库。
+MAIL_ENCRYPTION_KEY=
+MIGRATION_SECRET=
+
+# 以下仅用于 scripts/encryption-admin.sh 读取（Worker 本身不使用）
+# WORKER_URL=https://你的域名
