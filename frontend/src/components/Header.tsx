@@ -15,7 +15,7 @@ interface ExternalLink {
   url: string;
 }
 
-const DEFAULT_LINKS = '临时Gmail邮箱|https://smailpro.com/temporary-email,真实地址生成器|https://ip.alice7.eu.org/';
+const DEFAULT_LINKS = '临时Gmail邮箱1|https://smailpro.com/temporary-email,临时Gmail邮箱2|https://temp.tf';
 
 function parseExternalLinks(raw: string): ExternalLink[] {
   return raw.split(',').filter(Boolean).map(pair => {
