@@ -28,49 +28,20 @@
   </p>
 
 </div>
+---
 
+## 🚀 核心特性
 
-## <a id="features"></a>✨ 功能特点
-
-<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0;">
-  <div>
-    <h4>✨ 即时创建</h4>
-    <p>无需注册，一键生成永久匿名邮箱地址，即时可用</p>
-  </div>
-  <div>
-    <h4>🔒 隐私保护</h4>
-    <p>保护您的真实邮箱，避免垃圾邮件和信息泄露，完全匿名使用</p>
-  </div>
-  <div>
-    <h4>🔐 密码登录</h4>
-    <p>每个邮箱拥有独立高强度密码，可跨设备随时登录找回</p>
-  </div>
-  <div>
-    <h4>🔄 多账号切换</h4>
-    <p>登录过的邮箱自动保存到浏览器，顶部一键切换，管理多个账号更方便</p>
-  </div>
-  <div>
-    <h4>⚡ 实时接收</h4>
-    <p>实时接收邮件，支持自动刷新（10秒间隔），不错过任何邮件</p>
-  </div>
-  <div>
-    <h4>🌐 全球可用</h4>
-    <p>基于Cloudflare构建，全球边缘网络加速</p>
-  </div>
-  <div>
-    <h4>🌙 深色模式</h4>
-    <p>支持深色/浅色主题切换，保护视力</p>
-  </div>
-  <div>
-    <h4>🌍 多语言</h4>
-    <p>支持中英文界面，满足不同用户需求</p>
-  </div>
-  <div>
-    <h4>📱 响应式设计</h4>
-    <p>完美适配各种设备，从手机到桌面</p>
-  </div>
-</div>
-
+- **一键部署 Worker** - 支持 `deploy.workers.cloudflare.com` 一键部署后端
+- **统一域名管理** - 邮箱后缀由 Worker 环境变量 `ALLOWED_EMAIL_DOMAINS` 控制，前端动态获取
+- **安全加固** - 收紧 CORS、仅接收已创建邮箱、HTML 邮件沙箱渲染
+- **实时收信** - 基于 Cloudflare Email Routing，邮件秒收
+- **多域名支持** - 可同时配置多个邮箱后缀
+- **多账号切换** - 登录过的邮箱自动保存在本地，可一键切换
+- **暗色/亮色主题** - 自适应主题切换
+- **多语言支持** - 中英文切换
+- **响应式设计** - 完美适配 PC、平板、手机
+- **附件支持** - 支持查看、预览及下载邮件附件
 ---
 
 ## <a id="screenshots"></a>📸 界面预览
@@ -87,14 +58,11 @@
 
 ## <a id="deployment"></a>🚀 快速部署
 
-Miaoyou 现在采用全新的一体化部署方式，前端和后端整合为一个 Cloudflare Worker，部署更加简单！
+Myou-mail 现在采用全新的一体化部署方式，前端和后端整合为一个 Cloudflare Worker，部署更加简单！
 
 ### 🎯 部署方式选择
 
 #### 方式一：一键部署（推荐新手）
-
-> **使用前必读**：按钮指向的 GitHub 仓库必须已经包含本目录（`修改后的代码/`）的代码。
-> 如果仓库里还是旧代码，请先推送本目录，否则部署出来的不是加密版。
 
 <div align="center">
   <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/makeboku/myou" target="_blank">
@@ -115,13 +83,18 @@ Miaoyou 现在采用全新的一体化部署方式，前端和后端整合为一
     <li>按照页面提示连接您的 GitHub 账户</li>
     <li>填写应用名称和数据库名称</li>
     <li>在高级设置 -> 环境变量中设置：
-      <ul>
-        <li><code>VITE_EMAIL_DOMAIN</code>: 您的域名列表，使用 ',' 分割 (例如: example.com,another.com)</li>
-      </ul>
-    </li>
+
+## 🔧 环境变量
+
+| 变量名 | 填什么 | 示例或填在哪里 |
+| --- | --- | --- |
+| `VITE_EMAIL_DOMAIN` | 你的收信域名，多个用英文逗号分隔。必须与 Cloudflare Email Routing 中配置的域名一致 | `mail.example.com,example.org` |
+| `MAIL_ENCRYPTION_KEY` | D1 敏感字段加密主密钥，至少 16 字符，建议 32 字符以上。**丢了已加密数据无法恢复** | 网页一键部署：部署页提示填写 |
+| `MIGRATION_SECRET` | 历史数据加密迁移接口密钥，至少 16 字符。留空则 `/api/admin/encryption/*` 接口禁用 | 同上 |
+| `VITE_EXTERNAL_LINKS` | 顶部「工具」外链，格式 `标签|URL`，多个用逗号分隔；不需要可留空 | `临时Gmail邮箱1|https://smailpro.com/temporary-email,临时Gmail邮箱2|https://temp.tf` |
+
     <li>点击"创建和部署"</li>
     <li>部署完成后，在 Cloudflare Workers 控制面板中绑定自定义域名</li>
-    <li>部署页面会提示填写 <code>MAIL_ENCRYPTION_KEY</code>、<code>MIGRATION_SECRET</code> 和邮箱域名；密钥可用 <code>openssl rand -base64 32</code> 生成。</li>
     <li>配置 Cloudflare Email 路由，将邮件转发到您的 Worker</li>
   </ol>
 </div>
@@ -147,140 +120,26 @@ Miaoyou 现在采用全新的一体化部署方式，前端和后端整合为一
   </ol>
 </div>
 
----
-
-
-## <a id="env-vars"></a>🔧 环境变量
-
-Worker 端通过 `c.env` 读取变量，并通过 `/api/config` 下发给前端。因此请把变量配置在：
-
-- `wrangler.toml` 的 `[vars]`，或
-- Cloudflare Dashboard → Workers & Pages → 你的 Worker → Settings → Variables and Secrets。
-
-> `VITE_*` 只在 Vite 构建时作为前端后备值；一体化部署时以 Worker 运行时下发的 `/api/config` 为准。
-
-### VITE_EMAIL_DOMAIN（邮箱域名，必填）
-
-格式：`域名1,域名2,域名3`
-
-```toml
-[vars]
-VITE_EMAIL_DOMAIN = "example.com,another.com"
-```
-
-必须与 Cloudflare Email Routing 中配置的收信域名一致。
-
-### VITE_EXTERNAL_LINKS（顶部导航栏「工具」链接，可选）
-
-格式：`标签|URL,标签|URL`
-
-```toml
-VITE_EXTERNAL_LINKS = "临时邮箱|https://temp-mail.org,IP 查询|https://ip.sb"
-```
-
-不需要可以留空或删除该项。
-
-### MAIL_ENCRYPTION_KEY / MIGRATION_SECRET（Secrets）
-
-不要写进 `wrangler.toml`，使用 Secret 注入：
-
-```bash
-wrangler secret put MAIL_ENCRYPTION_KEY   # 至少 16 字符
-wrangler secret put MIGRATION_SECRET      # 历史数据迁移接口密钥
-```
-
-生成方式：`openssl rand -base64 32`。未配置 `MAIL_ENCRYPTION_KEY` 时敏感字段会以明文写入 D1。
 
 ---
+## 🔧 技术栈
 
-## <a id="development"></a>💻 本地开发
+### 🎨 前端
+- **React 18** - 用户界面库
+- **TypeScript** - 类型安全的 JavaScript 超集
+- **Tailwind CSS** - 实用优先的 CSS 框架
+- **Vite** - 现代前端构建工具
+- **React Router v6** - 前端路由
+- **i18next** - 国际化解决方案
+- **Font Awesome** - 图标库
 
-### 前置要求
+### ⚙️ 后端
+- **Cloudflare Workers** - 边缘计算平台
+- **Hono** - 轻量级 Web 框架
+- **Cloudflare D1** - 边缘 SQL 数据库（SQLite）
+- **Cloudflare Email Workers** - 邮件处理服务
 
-- **Node.js** >= 18
-- **pnpm** >= 8（推荐使用 `npm install -g pnpm` 安装）
-- **Cloudflare 账户**（用于后端开发和部署）
 
-### 环境变量配置
-
-在 `frontend/` 目录下创建 `.env` 文件（参考 `.env.example`）：
-
-```bash
-# 邮箱域名配置（多域名以逗号分隔）
-VITE_EMAIL_DOMAIN=example.com,abc.com,def.com
-
-# API地址配置（本地开发指向 wrangler 代理地址）
-VITE_API_BASE_URL=/api
-```
-
-### 🚀 启动开发服务器
-
-```bash
-# 1. 安装所有依赖
-pnpm install
-
-# 2. 启动前端开发服务器（默认端口 5173）
-pnpm dev:frontend
-
-# 3. 启动后端开发服务器（默认端口 8787，需要 wrangler）
-pnpm dev:backend
-
-# 前端开发服务器会自动将 /api 请求代理到后端
-```
-
-### 前端构建
-
-```bash
-# 构建生产版本
-pnpm run build
-
-# 预览构建结果
-pnpm run preview
-```
-
-### ⚙️ 部署到 Cloudflare
-
-```bash
-# 部署 Worker（需要配置 wrangler.toml）
-pnpm run deploy
-```
-
-### 前端访问
-
-| 环境 | 地址 |
-|------|------|
-| 本地开发 | http://localhost:5173 |
-| API 地址 | /api（通过 Vite proxy） |
-
-> **注意**：本地开发时，邮件接收功能需要 Cloudflare Email Routing 配合，仅在生产环境可用。
-
----
-
-## <a id="tech-stack"></a>🔧 技术栈
-
-<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0;">
-  <div>
-    <h3>🎨 前端</h3>
-    <ul>
-      <li><strong>React 18</strong> - 用户界面库</li>
-      <li><strong>TypeScript</strong> - 类型安全的JavaScript超集</li>
-      <li><strong>Tailwind CSS</strong> - 实用优先的CSS框架</li>
-      <li><strong>Vite</strong> - 现代前端构建工具</li>
-      <li><strong>React Router v6</strong> - 前端路由</li>
-      <li><strong>i18next</strong> - 国际化解决方案</li>
-      <li><strong>Font Awesome</strong> - 图标库</li>
-    </ul>
-  </div>
-  <div>
-    <h3>⚙️ 后端</h3>
-    <ul>
-      <li><strong>Cloudflare Workers</strong> - 边缘计算平台</li>
-      <li><strong>Hono</strong> - 轻量级Web框架</li>
-      <li><strong>Cloudflare D1</strong> - 边缘SQL数据库（SQLite）</li>
-      <li><strong>Cloudflare Email Workers</strong> - 邮件处理服务</li>
-    </ul>
-  </div>
-</div>
 
 ## <a id="project-structure"></a>📁 项目结构
 
