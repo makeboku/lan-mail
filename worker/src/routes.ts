@@ -863,6 +863,13 @@ app.get('/api/attachments/:id', async (c) => {
 // AI 聊天
 app.post('/api/chat', async (c) => {
   try {
+    // 按 IP 限流：每个 IP 每小时最多 30 次，防止 AI 额度被陌生人刷
+    const ip = c.req.header('CF-Connecting-IP') || 'unknown';
+    const limited = await enforceRateLimit(c.env.DB, `ai-chat:${ip}`, 3600, 30);
+    if (limited) {
+      return c.json({ success: false, error: 'AI 请求过于频繁，请 1 小时后再试' }, 429);
+    }
+
     const body = await c.req.json();
     const { message, history = [], systemPrompt, max_tokens } = body;
 
@@ -876,12 +883,18 @@ app.post('/api/chat', async (c) => {
       { role: 'user', content: message }
     ];
 
+    // 限制单次输出长度，避免被恶意拉长请求
+    const requestedMaxTokens = Number(max_tokens);
+    const safeMaxTokens = Number.isFinite(requestedMaxTokens)
+      ? Math.min(Math.max(requestedMaxTokens, 1), 1200)
+      : 800;
+
     const aiResponse = await c.env.AI.run(
       '@cf/meta/llama-4-scout-17b-16e-instruct',
       {
         messages,
         temperature: 0.75,
-        max_tokens: max_tokens || 800,
+        max_tokens: safeMaxTokens,
         stream: true
       }
     );
