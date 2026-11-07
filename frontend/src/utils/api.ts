@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config";
+import { getEncryptedItem, setEncryptedItem } from "./secureStorage";
 
 // API请求基础URL
 const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
@@ -209,28 +210,23 @@ export const deleteMailbox = async (address: string, password?: string) => {
   }
 };
 
-// 保存邮箱信息到本地存储
-export const saveMailboxToLocalStorage = (mailbox: Mailbox, password: string) => {
-  localStorage.setItem('tempMailbox', JSON.stringify({
+// 保存邮箱信息到本地存储（密码使用 AES-GCM 加密，不再明文写入 localStorage）
+export const saveMailboxToLocalStorage = async (mailbox: Mailbox, password: string): Promise<boolean> => {
+  return setEncryptedItem('tempMailbox', {
     ...mailbox,
     password,
     savedAt: Date.now() / 1000
-  }));
+  });
 };
 
-// 从本地存储获取邮箱信息
-export const getMailboxFromLocalStorage = (): (Mailbox & { password: string }) | null => {
-  const savedMailbox = localStorage.getItem('tempMailbox');
-  if (!savedMailbox) return null;
-  
-  try {
-    const mailbox = JSON.parse(savedMailbox) as Mailbox & { password: string; savedAt: number };
-    
-    return mailbox;
-  } catch (error) {
-    localStorage.removeItem('tempMailbox');
-    return null;
-  }
+// 从本地存储获取邮箱信息（自动解密，并迁移旧版明文数据）
+export const getMailboxFromLocalStorage = async (): Promise<(Mailbox & { password: string }) | null> => {
+  return getEncryptedItem<Mailbox & { password: string; savedAt: number }>('tempMailbox');
+};
+
+// 同步判断是否存在本地邮箱（用于页面跳转判断，不读取密码）
+export const hasSavedMailbox = (): boolean => {
+  return !!localStorage.getItem('tempMailbox');
 };
 
 // 登录邮箱
