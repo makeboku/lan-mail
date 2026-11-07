@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'; // feat: 导入 useContext
 import { useTranslation } from 'react-i18next';
 import { deleteMailbox as apiDeleteMailbox } from '../utils/api';
+import { getEncryptedItem, setEncryptedItem } from '../utils/secureStorage';
 import { MailboxContext } from '../contexts/MailboxContext'; // feat: 导入 MailboxContext
 
 interface MailboxSwitcherProps {
@@ -23,13 +24,13 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
 
   // 组件挂载时加载保存的邮箱
   useEffect(() => {
-    loadSavedMailboxes();
+    void loadSavedMailboxes();
   }, []);
 
   // 当前邮箱变化时，更新保存的邮箱列表
   useEffect(() => {
     if (currentMailbox) {
-      updateSavedMailboxes(currentMailbox as Mailbox & { password: string });
+      void updateSavedMailboxes(currentMailbox as Mailbox & { password: string });
     }
   }, [currentMailbox]);
 
@@ -47,12 +48,11 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
     };
   }, []);
 
-  // 加载保存的邮箱列表
-  const loadSavedMailboxes = () => {
+  // 加载保存的邮箱列表（密码为加密存储，读取时自动解密）
+  const loadSavedMailboxes = async () => {
     try {
-      const savedData = localStorage.getItem('savedMailboxes');
-      if (savedData) {
-        const mailboxes = JSON.parse(savedData) as (Mailbox & { password: string })[];
+      const mailboxes = await getEncryptedItem<(Mailbox & { password: string })[]>('savedMailboxes');
+      if (mailboxes) {
         setSavedMailboxes(mailboxes);
       }
     } catch (error) {
@@ -60,23 +60,16 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
     }
   };
 
-  // 更新保存的邮箱列表
-  const updateSavedMailboxes = (mailbox: Mailbox & { password: string }) => {
+  // 更新保存的邮箱列表（写入 localStorage 前自动加密）
+  const updateSavedMailboxes = async (mailbox: Mailbox & { password: string }) => {
     try {
       // 获取当前保存的邮箱
-      let mailboxes: (Mailbox & { password: string })[] = [];
-      try {
-        const savedData = localStorage.getItem('savedMailboxes');
-        if (savedData) {
-          mailboxes = JSON.parse(savedData) as (Mailbox & { password: string })[];
-        }
-      } catch (error) {
-        console.error('Error parsing saved mailboxes:', error);
-      }
-      
+      let mailboxes =
+        (await getEncryptedItem<(Mailbox & { password: string })[]>('savedMailboxes')) || [];
+
       // 检查当前邮箱是否已在列表中
       const mailboxIndex = mailboxes.findIndex(m => m.address === mailbox.address);
-      
+
       if (mailboxIndex >= 0) {
         // 更新现有邮箱
         mailboxes[mailboxIndex] = mailbox;
@@ -84,10 +77,10 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
         // 添加新邮箱
         mailboxes.push(mailbox);
       }
-      
+
       // 更新状态和本地存储
       setSavedMailboxes(mailboxes);
-      localStorage.setItem('savedMailboxes', JSON.stringify(mailboxes));
+      await setEncryptedItem('savedMailboxes', mailboxes);
     } catch (error) {
       console.error('Error updating saved mailboxes:', error);
     }
@@ -110,7 +103,7 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
         // 从前端列表和localStorage中移除
         const updatedMailboxes = savedMailboxes.filter(m => m.address !== address);
         setSavedMailboxes(updatedMailboxes);
-        localStorage.setItem('savedMailboxes', JSON.stringify(updatedMailboxes));
+        await setEncryptedItem('savedMailboxes', updatedMailboxes);
         // feat: 删除成功提示
         showSuccessMessage(t('mailbox.deleteSavedSuccess'));
       } else {
@@ -146,7 +139,7 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
       
       // 更新UI和localStorage
       setSavedMailboxes(mailboxesToKeep);
-      localStorage.setItem('savedMailboxes', JSON.stringify(mailboxesToKeep));
+      await setEncryptedItem('savedMailboxes', mailboxesToKeep);
       setShowDropdown(false);
 
       // feat: 根据结果显示不同的通知
