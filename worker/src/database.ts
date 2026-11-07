@@ -196,6 +196,9 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     // 创建邮箱表（address 存确定性密文，address_hash 存 HMAC 盲索引）
     await db.exec(`CREATE TABLE IF NOT EXISTS mailboxes (id TEXT PRIMARY KEY, address TEXT UNIQUE NOT NULL, address_hash TEXT, password TEXT NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, ip_address TEXT, last_accessed INTEGER NOT NULL);`);
     await addColumnIfMissing(db, 'mailboxes', 'address_hash', 'TEXT');
+    // [encrypt] 兼容早期旧库
+    await addColumnIfMissing(db, 'mailboxes', 'ip_address', 'TEXT');
+    await addColumnIfMissing(db, 'mailboxes', 'last_accessed', 'INTEGER DEFAULT 0');
     
     // 创建邮件表
     await db.exec(`CREATE TABLE IF NOT EXISTS emails (id TEXT PRIMARY KEY, mailbox_id TEXT NOT NULL, from_address TEXT NOT NULL, from_name TEXT, to_address TEXT NOT NULL, subject TEXT, text_content TEXT, html_content TEXT, received_at INTEGER NOT NULL, has_attachments BOOLEAN DEFAULT FALSE, is_read BOOLEAN DEFAULT FALSE, FOREIGN KEY (mailbox_id) REFERENCES mailboxes(id) ON DELETE CASCADE);`);
@@ -204,6 +207,9 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     
     // 创建附件表
     await db.exec(`CREATE TABLE IF NOT EXISTS attachments (id TEXT PRIMARY KEY, email_id TEXT NOT NULL, filename TEXT NOT NULL, mime_type TEXT NOT NULL, content TEXT, size INTEGER NOT NULL, created_at INTEGER NOT NULL, is_large BOOLEAN DEFAULT FALSE, chunks_count INTEGER DEFAULT 0, FOREIGN KEY (email_id) REFERENCES emails(id) ON DELETE CASCADE);`);
+    // [encrypt] 兼容早期没有分块字段的旧库，避免加密迁移查询 is_large/chunks_count 时报错
+    await addColumnIfMissing(db, 'attachments', 'is_large', 'BOOLEAN DEFAULT FALSE');
+    await addColumnIfMissing(db, 'attachments', 'chunks_count', 'INTEGER DEFAULT 0');
     
     // 创建附件块表
     await db.exec(`CREATE TABLE IF NOT EXISTS attachment_chunks (id TEXT PRIMARY KEY, attachment_id TEXT NOT NULL, chunk_index INTEGER NOT NULL, content TEXT NOT NULL, FOREIGN KEY (attachment_id) REFERENCES attachments(id) ON DELETE CASCADE);`);
@@ -232,6 +238,10 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     
     // [feat] 站内聊天附件表（与邮件附件分离），msg_key 为空表示已上传但未随消息发送
     await db.exec(`CREATE TABLE IF NOT EXISTS chat_attachments (id TEXT PRIMARY KEY, mailbox_id TEXT NOT NULL, msg_key TEXT, filename TEXT NOT NULL, mime_type TEXT NOT NULL, content TEXT, size INTEGER NOT NULL, is_large INTEGER DEFAULT 0, chunks_count INTEGER DEFAULT 0, created_at INTEGER NOT NULL);`);
+    // [encrypt] 兼容早期没有 msg_key / 分块字段的旧库
+    await addColumnIfMissing(db, 'chat_attachments', 'msg_key', 'TEXT');
+    await addColumnIfMissing(db, 'chat_attachments', 'is_large', 'INTEGER DEFAULT 0');
+    await addColumnIfMissing(db, 'chat_attachments', 'chunks_count', 'INTEGER DEFAULT 0');
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_attachments_mailbox ON chat_attachments(mailbox_id);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_attachments_msg_key ON chat_attachments(msg_key);`);
     await db.exec(`CREATE TABLE IF NOT EXISTS chat_attachment_chunks (id TEXT PRIMARY KEY, attachment_id TEXT NOT NULL, chunk_index INTEGER NOT NULL, content TEXT NOT NULL);`);
