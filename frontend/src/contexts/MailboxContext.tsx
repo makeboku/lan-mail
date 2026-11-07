@@ -113,10 +113,10 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
   const errorTimeoutRef = useRef<number | null>(null);
   const successTimeoutRef = useRef<number | null>(null);
 
-  // 包装 setMailbox 以自动保存到 localStorage
+  // 包装 setMailbox 以自动保存到 localStorage（异步加密写入，不阻塞界面）
   const setMailbox = (newMailbox: Mailbox & { password: string }) => {
     setMailboxState(newMailbox);
-    saveMailboxToLocalStorage(newMailbox, newMailbox.password);
+    void saveMailboxToLocalStorage(newMailbox, newMailbox.password);
   };
 
   const dismissWithParticles = (type: 'success' | 'error', duration: number) => {
@@ -166,11 +166,18 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
 
   // 初始化：仅检查本地存储，不再自动创建
   useEffect(() => {
-    const savedMailbox = getMailboxFromLocalStorage();
-    if (savedMailbox) {
-      setMailbox(savedMailbox);
-    }
-    setIsLoading(false);
+    let cancelled = false;
+    (async () => {
+      const savedMailbox = await getMailboxFromLocalStorage();
+      if (cancelled) return;
+      if (savedMailbox) {
+        setMailboxState(savedMailbox);
+      }
+      setIsLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
   
   // 加载域名配置
