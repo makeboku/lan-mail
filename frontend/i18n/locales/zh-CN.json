@@ -25,7 +25,8 @@
     "youtube": "油管频道",
     "xugouMonitor": "xugou监控",
     "privacyPolicy": "隐私政策",
-    "terms": "使用条款"
+    "terms": "使用条款",
+    "mailboxCount": "已创建 {{count}} 个邮箱"
   },
   "mailbox": {
     "createRandom": "创建随机邮箱",
