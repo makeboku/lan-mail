@@ -25,7 +25,8 @@
     "youtube": "YouTube",
     "xugouMonitor": "Xugou Monitor",
     "privacyPolicy": "Privacy Policy",
-    "terms": "Terms of Service"
+    "terms": "Terms of Service",
+    "mailboxCount": "{{count}} mailboxes created"
   },
   "mailbox": {
     "createRandom": "Create Random Mailbox",
