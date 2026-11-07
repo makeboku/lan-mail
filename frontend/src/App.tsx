@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import ChatPage from './pages/ChatPage';
 import InternalChatPage from './pages/InternalChatPage';
 import NotFoundPage from './pages/NotFoundPage';
+import AdminMigratePage from './pages/AdminMigratePage';
 import { MailboxProvider } from './contexts/MailboxContext';
 
 const App: React.FC = () => {
@@ -18,6 +19,7 @@ const App: React.FC = () => {
               {/* 移除了 privacy-policy 和 terms 的路由 */}
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/internal-chat" element={<InternalChatPage />} />
+              <Route path="/admin/migrate" element={<AdminMigratePage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
