@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { MailboxContext } from '../contexts/MailboxContext';
 import Container from '../components/Container';
-import { sendInternalMessage, editInternalMessage, deleteChatMessage, getInternalChat, getFullInternalChat, clearInternalChat, getInternalChatConversations, uploadChatAttachments, downloadChatAttachment, syncChatReadStatus, InternalChatMessage, getMailboxFromLocalStorage } from '../utils/api';
+import { sendInternalMessage, editInternalMessage, deleteChatMessage, getInternalChat, getFullInternalChat, clearInternalChat, getInternalChatConversations, uploadChatAttachments, downloadChatAttachment, syncChatReadStatus, InternalChatMessage, hasSavedMailbox } from '../utils/api';
 
 const POLL_INTERVAL = 4000;
 const READ_SYNC_INTERVAL = 3600000; // 已读回执每小时同步一次
@@ -66,10 +66,10 @@ const InternalChatPage: React.FC = () => {
   const messagesRef = useRef<InternalChatMessage[]>([]);
   const myAddress = mailbox?.address || '';
 
-  // 未登录直接跳回首页（同步读取本地存储，避免邮箱从会话恢复完成前的闪烁跳转）
-  const [hasSavedMailbox] = useState(() => {
+  // 未登录直接跳回首页（同步检查是否存在本地邮箱，避免邮箱从会话恢复完成前的闪烁跳转）
+  const [hasSaved] = useState(() => {
     try {
-      return !!getMailboxFromLocalStorage();
+      return hasSavedMailbox();
     } catch {
       return false;
     }
@@ -676,7 +676,7 @@ const InternalChatPage: React.FC = () => {
     <Container>
       <div className="max-w-4xl mx-auto h-[calc(100dvh-16rem)] min-h-[320px] flex flex-col">
         {!myAddress ? (
-          hasSavedMailbox ? (
+          hasSaved ? (
             <div className="flex items-center justify-center min-h-[50vh]">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
