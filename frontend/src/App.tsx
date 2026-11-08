@@ -6,6 +6,7 @@ import ChatPage from './pages/ChatPage';
 import InternalChatPage from './pages/InternalChatPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AdminMigratePage from './pages/AdminMigratePage';
+import AdminNoticePage from './pages/AdminNoticePage';
 import { MailboxProvider } from './contexts/MailboxContext';
 
 const App: React.FC = () => {
@@ -20,6 +21,7 @@ const App: React.FC = () => {
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/internal-chat" element={<InternalChatPage />} />
               <Route path="/admin/migrate" element={<AdminMigratePage />} />
+              <Route path="/admin/notice" element={<AdminNoticePage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
