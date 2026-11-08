@@ -17,16 +17,6 @@
 
   <h3>💌 安全、简单、永久有效的匿名邮箱服务</h3>
 
-  <p>
-    <a href="#features"><strong>✨ 功能特点</strong></a> •
-    <a href="#screenshots"><strong>📸 界面预览</strong></a> •
-    <a href="#deployment"><strong>🚀 快速部署</strong></a> •
-    <a href="#env-vars"><strong>🔧 环境变量</strong></a> •
-    <a href="#development"><strong>💻 本地开发</strong></a> •
-    <a href="#tech-stack"><strong>🔧 技术栈</strong></a> •
-    <a href="#project-structure"><strong>📁 项目结构</strong></a>
-  </p>
-
 </div>
 
 ---
