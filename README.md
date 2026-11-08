@@ -98,7 +98,7 @@ Myou-mail 现在采用全新的一体化部署方式，前端和后端整合为�
 | --- | --- | --- |
 | `VITE_EMAIL_DOMAIN` | 你的收信域名，多个用英文逗号分隔。必须与 Cloudflare Email Routing 中配置的域名一致 | `mail.example.com,example.org` |
 | `MAIL_ENCRYPTION_KEY` | D1 敏感字段加密主密钥，至少 16 字符，建议 32 字符以上。**丢了已加密数据无法恢复** | 网页一键部署：部署页提示填写 |
-| `MIGRATION_SECRET` | 历史数据加密迁移接口密钥，至少 16 字符。留空则 `/api/admin/encryption/*` 接口禁用 | 同上 |
+| `MIGRATION_SECRET` | 历史数据加密迁移接口密钥，至少 16 字符，建议 32 字符以上。 | 同上 |
 | `VITE_EXTERNAL_LINKS` | 顶部「工具」外链，格式 `标签|URL`，多个用逗号分隔；不需要可留空 | `临时Gmail邮箱1|https://smailpro.com/temporary-email,临时Gmail邮箱2|https://temp.tf` |
 
 <div 
