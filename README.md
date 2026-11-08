@@ -47,6 +47,21 @@
 
 ---
 
+## 🔔 秒邮功能入口
+
+秒邮现已支持**站点公告**与**旧数据加密迁移**，两个入口共用管理员密钥 `MIGRATION_SECRET`。
+
+| 功能 | 地址 | 说明 |
+| --- | --- | --- |
+| 📢 站点公告管理 | [your-domain.com/admin/notice](https://your-domain.com/admin/notice) | 发布维护通知、功能更新、临时提醒；支持四种样式、中英文文案和定时上下线 |
+| 🔐 旧数据一键加密迁移 | [your-domain.com/admin/migrate](https://your-domain.com/admin/migrate) | 把旧 D1 中的明文邮箱、邮件、附件和聊天内容分批加密，支持断点续跑 |
+
+公告发布后会显示在全站页面顶部，用户可手动关闭；管理员更新公告后，关闭过的用户会重新看到一次。迁移前请先备份旧 D1，并妥善保存 `MAIL_ENCRYPTION_KEY`。
+
+> 以上为管理员入口，需要输入 `MIGRATION_SECRET`。公告内容不加密存储，请勿填写密码、密钥等敏感信息。
+
+ ---
+
 ## <a id="deployment"></a>🚀 快速部署
 
 Myou-mail 现在采用全新的一体化部署方式，前端和后端整合为一个 Cloudflare Worker，部署更加简单！
