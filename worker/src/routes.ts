@@ -38,7 +38,11 @@ import {
   editInternalMessage,
   deleteChatMessage,
   getEncryptionStatus,
-  encryptLegacyBatch
+  encryptLegacyBatch,
+  getAnnouncement,
+  getActiveAnnouncement,
+  saveAnnouncement,
+  deleteAnnouncement
 } from './database';
 import { generateRandomAddress, generatePassword, isValidEmailAddress, extractMailboxName, getCurrentTimestamp } from './utils';
 import { decryptAddress } from './crypto';
@@ -144,6 +148,21 @@ app.get('/api/config', (c) => {
     return c.json({ 
       success: false, 
       error: '获取配置失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 获取当前对外展示的公告（公开接口）
+app.get('/api/announcement', async (c) => {
+  try {
+    const announcement = await getActiveAnnouncement(c.env.DB);
+    return c.json({ success: true, announcement });
+  } catch (error) {
+    console.error('获取公告失败:', error);
+    return c.json({
+      success: false,
+      error: '获取公告失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }
@@ -1076,6 +1095,106 @@ function checkMigrationSecret(c: AuthenticatedContext): boolean {
   }
   return diff === 0;
 }
+
+// 解析公告时间：支持秒级时间戳、毫秒级时间戳或 ISO 字符串，返回秒级时间戳；0 表示不限
+function parseAnnouncementTime(value: unknown): number {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.floor(value > 1e12 ? value / 1000 : value);
+  }
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : Math.floor(parsed / 1000);
+  }
+  return 0;
+}
+
+// 读取公告（管理接口，包含未启用的记录）
+app.get('/api/admin/announcement', async (c) => {
+  if (!checkMigrationSecret(c)) {
+    return c.json({ success: false, error: 'unauthorized' }, 401);
+  }
+  try {
+    const announcement = await getAnnouncement(c.env.DB);
+    return c.json({ success: true, announcement });
+  } catch (error) {
+    console.error('获取公告失败:', error);
+    return c.json({
+      success: false,
+      error: '获取公告失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 保存公告（管理接口）
+app.put('/api/admin/announcement', async (c) => {
+  if (!checkMigrationSecret(c)) {
+    return c.json({ success: false, error: 'unauthorized' }, 401);
+  }
+  try {
+    let body: any = {};
+    try {
+      body = await c.req.json();
+    } catch {
+      body = {};
+    }
+
+    const title = typeof body?.title === 'string' ? body.title.trim() : '';
+    const content = typeof body?.content === 'string' ? body.content.trim() : '';
+    if (!title || !content) {
+      return c.json({ success: false, error: '标题和内容不能为空' }, 400);
+    }
+    if (title.length > 100 || content.length > 5000) {
+      return c.json({ success: false, error: '标题最多 100 字，内容最多 5000 字' }, 400);
+    }
+
+    const levels = ['info', 'success', 'warning', 'important'];
+    const level = levels.includes(body?.level) ? body.level : 'info';
+    const startsAt = parseAnnouncementTime(body?.startsAt);
+    const endsAt = parseAnnouncementTime(body?.endsAt);
+    if (startsAt && endsAt && endsAt <= startsAt) {
+      return c.json({ success: false, error: '结束时间必须晚于开始时间' }, 400);
+    }
+
+    const announcement = await saveAnnouncement(c.env.DB, {
+      title,
+      content,
+      titleEn: typeof body?.titleEn === 'string' ? body.titleEn.trim() : '',
+      contentEn: typeof body?.contentEn === 'string' ? body.contentEn.trim() : '',
+      level,
+      isActive: body?.isActive !== false,
+      startsAt,
+      endsAt
+    });
+
+    return c.json({ success: true, announcement });
+  } catch (error) {
+    console.error('保存公告失败:', error);
+    return c.json({
+      success: false,
+      error: '保存公告失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 删除公告（管理接口）
+app.delete('/api/admin/announcement', async (c) => {
+  if (!checkMigrationSecret(c)) {
+    return c.json({ success: false, error: 'unauthorized' }, 401);
+  }
+  try {
+    await deleteAnnouncement(c.env.DB);
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('删除公告失败:', error);
+    return c.json({
+      success: false,
+      error: '删除公告失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
 
 // 查看加密是否启用、还有多少历史明文数据待迁移
 app.get('/api/admin/encryption/status', async (c) => {

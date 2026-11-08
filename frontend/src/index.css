@@ -345,4 +345,26 @@ html.starry .security-warning-card .text-base {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* 公告横幅呼吸灯：5 秒一个完整循环（2.5 秒淡出 + 2.5 秒淡入） */
+@keyframes announcement-breathe {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.announcement-breathing {
+  animation: announcement-breathe 5s ease-in-out infinite;
+  will-change: opacity;
+}
+
+/* 用户系统开启“减少动态效果”时保持常亮，避免影响阅读 */
+@media (prefers-reduced-motion: reduce) {
+  .announcement-breathing {
+    animation: none;
+  }
 } 

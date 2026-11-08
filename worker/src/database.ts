@@ -259,6 +259,8 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     
     // [encrypt] 迁移进度记录表（用于历史数据加密迁移）
     await db.exec(`CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);`);
+    // [feat] 站点公告表（单条公告固定 id = 'current'，时间字段为秒级时间戳，0 表示不限）
+    await db.exec(`CREATE TABLE IF NOT EXISTS announcements (id TEXT PRIMARY KEY, title TEXT NOT NULL, content TEXT NOT NULL, title_en TEXT, content_en TEXT, level TEXT DEFAULT 'info', is_active INTEGER DEFAULT 1, starts_at INTEGER DEFAULT 0, ends_at INTEGER DEFAULT 0, updated_at INTEGER NOT NULL);`);
     // [encrypt] 迁移跳过记录表：解密失败的历史行无法自动迁移，记录后不再反复占用批次
     await db.exec(`CREATE TABLE IF NOT EXISTS encryption_skipped (category TEXT NOT NULL, row_id TEXT NOT NULL, reason TEXT, created_at INTEGER NOT NULL, PRIMARY KEY (category, row_id));`);
 
@@ -1975,4 +1977,110 @@ export async function encryptLegacyBatch(db: D1Database, limit = 20): Promise<En
   await setMigrationCursor(db, 'chatAttachments', nextMigrationCursor(chatAttachments.results || [], attachmentLimit));
 
   return result;
+}
+
+// ============================================================================
+// 站点公告（单条，固定 id = 'current'）
+// ============================================================================
+export type AnnouncementLevel = 'info' | 'success' | 'warning' | 'important';
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  titleEn: string;
+  contentEn: string;
+  level: AnnouncementLevel;
+  isActive: boolean;
+  startsAt: number;
+  endsAt: number;
+  updatedAt: number;
+}
+
+export interface SaveAnnouncementParams {
+  title: string;
+  content: string;
+  titleEn?: string;
+  contentEn?: string;
+  level?: AnnouncementLevel;
+  isActive?: boolean;
+  startsAt?: number;
+  endsAt?: number;
+}
+
+const ANNOUNCEMENT_ID = 'current';
+const ANNOUNCEMENT_LEVELS: AnnouncementLevel[] = ['info', 'success', 'warning', 'important'];
+
+interface AnnouncementRow {
+  id: string;
+  title: string;
+  content: string;
+  title_en: string | null;
+  content_en: string | null;
+  level: string | null;
+  is_active: number | null;
+  starts_at: number | null;
+  ends_at: number | null;
+  updated_at: number;
+}
+
+function mapAnnouncementRow(row: AnnouncementRow): Announcement {
+  const level = (row.level || 'info') as AnnouncementLevel;
+  return {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    titleEn: row.title_en || '',
+    contentEn: row.content_en || '',
+    level: ANNOUNCEMENT_LEVELS.includes(level) ? level : 'info',
+    isActive: (row.is_active ?? 1) === 1,
+    startsAt: row.starts_at || 0,
+    endsAt: row.ends_at || 0,
+    updatedAt: row.updated_at,
+  };
+}
+
+/** 读取当前公告（包含未启用/未到时间的记录，供管理页编辑） */
+export async function getAnnouncement(db: D1Database): Promise<Announcement | null> {
+  const row = await db.prepare(`SELECT * FROM announcements WHERE id = ?`)
+    .bind(ANNOUNCEMENT_ID)
+    .first<AnnouncementRow>();
+  return row ? mapAnnouncementRow(row) : null;
+}
+
+/** 读取当前对外展示的公告（启用且在有效期内） */
+export async function getActiveAnnouncement(db: D1Database, now = getCurrentTimestamp()): Promise<Announcement | null> {
+  const announcement = await getAnnouncement(db);
+  if (!announcement || !announcement.isActive) return null;
+  if (announcement.startsAt > 0 && announcement.startsAt > now) return null;
+  if (announcement.endsAt > 0 && announcement.endsAt < now) return null;
+  return announcement;
+}
+
+/** 保存（新增或覆盖）当前公告 */
+export async function saveAnnouncement(db: D1Database, params: SaveAnnouncementParams): Promise<Announcement> {
+  const level = params.level && ANNOUNCEMENT_LEVELS.includes(params.level) ? params.level : 'info';
+  await db.prepare(`INSERT OR REPLACE INTO announcements (id, title, content, title_en, content_en, level, is_active, starts_at, ends_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(
+      ANNOUNCEMENT_ID,
+      params.title.slice(0, 100),
+      params.content.slice(0, 5000),
+      (params.titleEn || '').slice(0, 100),
+      (params.contentEn || '').slice(0, 5000),
+      level,
+      params.isActive === false ? 0 : 1,
+      Math.max(0, Math.floor(params.startsAt || 0)),
+      Math.max(0, Math.floor(params.endsAt || 0)),
+      getCurrentTimestamp()
+    )
+    .run();
+
+  const saved = await getAnnouncement(db);
+  if (!saved) throw new Error('公告保存失败');
+  return saved;
+}
+
+/** 删除当前公告 */
+export async function deleteAnnouncement(db: D1Database): Promise<void> {
+  await db.prepare(`DELETE FROM announcements WHERE id = ?`).bind(ANNOUNCEMENT_ID).run();
 }

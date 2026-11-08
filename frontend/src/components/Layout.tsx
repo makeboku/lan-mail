@@ -7,6 +7,7 @@ import SEO from './SEO';
 import { MailboxContext } from '../contexts/MailboxContext';
 import InfoModal from './InfoModal';
 import Pet from './Pet';
+import AnnouncementBanner from './AnnouncementBanner';
 
 const Layout: React.FC = () => {
   const { t } = useTranslation();
@@ -65,6 +66,7 @@ const Layout: React.FC = () => {
         onMailboxChange={setMailbox} 
         isLoading={isLoading}
       />
+      <AnnouncementBanner />
       <main className="flex-1 py-6">
         <Outlet />
       </main>

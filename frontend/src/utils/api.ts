@@ -632,3 +632,40 @@ export const clearInternalChat = async (address: string, withAddress: string, ho
     return { success: false, error };
   }
 };
+
+// 站点公告
+export type AnnouncementLevel = 'info' | 'success' | 'warning' | 'important';
+
+export interface AnnouncementData {
+  id: string;
+  title: string;
+  content: string;
+  titleEn: string;
+  contentEn: string;
+  level: AnnouncementLevel;
+  isActive: boolean;
+  startsAt: number;
+  endsAt: number;
+  updatedAt: number;
+}
+
+// 获取当前对外展示的公告（没有公告时 announcement 为 null）
+export const getAnnouncement = async (): Promise<{ success: boolean; announcement?: AnnouncementData | null; error?: any }> => {
+  try {
+    const response = await fetch(apiUrl('/api/announcement'));
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch announcement');
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+      return { success: true, announcement: data.announcement ?? null };
+    }
+    throw new Error(data.error || 'Unknown error');
+  } catch (error) {
+    console.error('Error fetching announcement:', error);
+    return { success: false, error };
+  }
+};
